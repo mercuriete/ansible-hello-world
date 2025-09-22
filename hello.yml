@@ -1,0 +1,13 @@
+---
+- name: Hello World Playbook
+  hosts: localhost
+  vars:
+    greeting_name: "World"
+  tasks:
+    - name: Display hello message
+      ansible.builtin.debug:
+        msg: "hello {{ greeting_name }}"
+
+    - name: Write hello message to file
+      ansible.builtin.shell: echo "hello {{ greeting_name }}" > /tmp/hello.txt
+      changed_when: true
