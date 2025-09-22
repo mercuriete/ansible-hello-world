@@ -1,0 +1,64 @@
+name: Ansible Playbook Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ansible-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Ansible and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ansible ansible-lint yamllint
+
+    - name: Run YAML lint
+      run: |
+        yamllint hello.yml
+
+    - name: Run Ansible lint
+      run: |
+        ansible-lint hello.yml
+
+    - name: Validate Ansible syntax
+      run: |
+        ansible-playbook --syntax-check hello.yml
+
+    - name: Run Ansible playbook in check mode
+      run: |
+        ansible-playbook --check hello.yml
+
+    - name: Execute Ansible playbook
+      run: |
+        ansible-playbook hello.yml
+
+    - name: Verify file content was created
+      run: |
+        cat /tmp/hello.txt
+
+    - name: Validate file content matches expected output
+      run: |
+        expected_content="hello World"
+        actual_content=$(cat /tmp/hello.txt)
+        if [ "$actual_content" = "$expected_content" ]; then
+          echo "✅ File content matches expected output: $actual_content"
+        else
+          echo "❌ File content mismatch. Expected: '$expected_content', Got: '$actual_content'"
+          exit 1
+        fi
+
+    - name: Clean up test file
+      run: |
+        rm -f /tmp/hello.txt
